@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "dev.foltz.animalsrunfromyou.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+		"ChickenRunsFromPlayerMixin",
+		"CowRunsFromPlayerMixin",
+		"PigRunsFromPlayerMixin",
+		"SheepRunsFromPlayerMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
