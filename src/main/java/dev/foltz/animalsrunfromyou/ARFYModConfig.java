@@ -8,13 +8,13 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @Config(name = "animals-run-from-you")
 public class ARFYModConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject
-    public AnimalStats chicken = new AnimalStats(1.5f, 3f, 32, 0.0f, false);
+    public AnimalStats chicken = new AnimalStats(1.5f, 2.5f, 32, 0.5f, false);
 
     @ConfigEntry.Gui.CollapsibleObject
-    public AnimalStats cow = new AnimalStats(0.9f, 3f, 48, 0.0f, false);
+    public AnimalStats cow = new AnimalStats(1.0f, 3f, 48, 0.0f, false);
 
     @ConfigEntry.Gui.CollapsibleObject
-    public AnimalStats horse = new AnimalStats(0.8f, 3.5f, 48, 0.0f, false);
+    public AnimalStats horse = new AnimalStats(0.5f, 3.5f, 48, 0.0f, false);
 
     @ConfigEntry.Gui.CollapsibleObject
     public AnimalStats pig = new AnimalStats(1.4f, 2.5f, 32, 0.0f, false);
