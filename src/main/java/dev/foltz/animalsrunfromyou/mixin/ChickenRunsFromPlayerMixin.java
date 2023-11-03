@@ -1,5 +1,8 @@
 package dev.foltz.animalsrunfromyou.mixin;
 
+import dev.foltz.animalsrunfromyou.ARFYModConfig;
+import dev.foltz.animalsrunfromyou.RunAwayGoal;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.entity.ai.goal.FleeEntityGoal;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.ChickenEntity;
@@ -11,8 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static dev.foltz.animalsrunfromyou.Refs.*;
-
 @Mixin(ChickenEntity.class)
 public abstract class ChickenRunsFromPlayerMixin extends MobEntity {
     protected ChickenRunsFromPlayerMixin(World world) {
@@ -22,7 +23,7 @@ public abstract class ChickenRunsFromPlayerMixin extends MobEntity {
     @Inject(method="initGoals", at=@At("RETURN"))
     private void initGoalsMixin(CallbackInfo info) {
         if (this.getWorld() instanceof ServerWorld) {
-            this.goalSelector.add(3, new FleeEntityGoal<>((ChickenEntity) (Object) this, PlayerEntity.class, CHICKEN_FEAR_RANGE, CHICKEN_SPEED_SLOW, CHICKEN_SPEED_FAST));
+            this.goalSelector.add(3, new RunAwayGoal<>((ChickenEntity) (Object) this, PlayerEntity.class, () -> ARFYModConfig.getConfig().chicken));
         }
     }
 }

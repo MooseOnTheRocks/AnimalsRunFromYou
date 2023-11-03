@@ -32,8 +32,8 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// Other dependencies
-	modRuntimeOnly("com.terraformersmc:modmenu:${project.modmenu_version}") {
-		transitive = false
+	modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}") {
+		exclude(group: "net.fabricmc.fabric-api")
 	}
 
 	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_version}") {
