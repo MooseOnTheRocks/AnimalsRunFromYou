@@ -8,6 +8,8 @@ import net.minecraft.entity.passive.ChickenEntity;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Items;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,8 +26,10 @@ public abstract class SheepRunsFromPlayerMixin extends MobEntity {
     @Inject(method="initGoals", at=@At("RETURN"))
     private void initGoalsMixin(CallbackInfo info) {
         if (this.getWorld() instanceof ServerWorld) {
-            this.goalSelector.add(3, new RunAwayGoal<>((SheepEntity) (Object) this, WolfEntity.class, () -> ARFYModConfig.getConfig().sheep));
-            this.goalSelector.add(3, new RunAwayGoal<>((SheepEntity) (Object) this, PlayerEntity.class, () -> ARFYModConfig.getConfig().sheep));
+            if (ARFYModConfig.getConfig().sheep.runFromWolves) {
+                this.goalSelector.add(3, new RunAwayGoal<>((SheepEntity) (Object) this, WolfEntity.class, Ingredient.ofItems(Items.WHEAT), () -> ARFYModConfig.getConfig().sheep));
+            }
+            this.goalSelector.add(3, new RunAwayGoal<>((SheepEntity) (Object) this, PlayerEntity.class, Ingredient.ofItems(Items.WHEAT), () -> ARFYModConfig.getConfig().sheep));
         }
     }
 }

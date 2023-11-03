@@ -8,6 +8,7 @@ import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.predicate.entity.EntityPredicates;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -19,16 +20,18 @@ public class RunAwayGoal<T extends LivingEntity> extends Goal {
     public static final int FLEE_RANGE_VERTICAL = 7;
 
     private final PathAwareEntity mob;
-    private final Supplier<ARFYModConfig.Stats> getStats;
+    private final Supplier<ARFYModConfig.AnimalStats> getStats;
     private final TargetPredicate withinRangePredicate;
     private T targetEntity;
     private final Class<T> classToRunFrom;
     private final EntityNavigation fleeingEntityNavigation;
     private Path fleePath;
+    private final Ingredient breedingIngredient;
 
-    public RunAwayGoal(PathAwareEntity mob, Class<T> classToRunFrom, Supplier<ARFYModConfig.Stats> getStats) {
+    public RunAwayGoal(PathAwareEntity mob, Class<T> classToRunFrom, Ingredient breedingIngredient, Supplier<ARFYModConfig.AnimalStats> getStats) {
         this.mob = mob;
         this.classToRunFrom = classToRunFrom;
+        this.breedingIngredient = breedingIngredient;
         this.getStats = getStats;
         this.withinRangePredicate = TargetPredicate
             .createAttackable()
@@ -39,16 +42,26 @@ public class RunAwayGoal<T extends LivingEntity> extends Goal {
 
     private T targetNearestEntityToRunFrom() {
         var gatherEntities = mob.getWorld().getEntitiesByClass(classToRunFrom,
-            mob.getBoundingBox().expand(getDistance(), 3.0, getDistance()), (livingEntity) -> true);
+            mob.getBoundingBox().expand(getDistance(), (getDistance() + 1f) / 2f, getDistance()), (livingEntity) -> true);
         return mob.getWorld()
             .getClosestEntity(gatherEntities, withinRangePredicate.setBaseMaxDistance(getDistance()), mob, mob.getX(), mob.getY(), mob.getZ());
     }
 
     @Override
     public boolean canStart() {
+        if (getDistance() == 0) {
+            return false;
+        }
+
         targetEntity = targetNearestEntityToRunFrom();
         if (targetEntity == null) {
             return false;
+        }
+        for (net.minecraft.item.ItemStack itemStack : targetEntity.getHandItems()) {
+            if (breedingIngredient.test(itemStack)) {
+                System.out.println("Noticed breeding item!");
+                return false;
+            }
         }
 
         Vec3d vec3d = NoPenaltyTargeting.findFrom(mob, FLEE_RANGE_HORIZONTAL, FLEE_RANGE_VERTICAL, targetEntity.getPos());
@@ -81,11 +94,19 @@ public class RunAwayGoal<T extends LivingEntity> extends Goal {
 
     @Override
     public void tick() {
-        var maxDistSquared = getDistance() * getDistance();
-        var distSquared = Math.max(mob.squaredDistanceTo(targetEntity), maxDistSquared);
-        var delta = 1 - distSquared / maxDistSquared;
-        var speed = distSquared == 0 ? getFastSpeed() : MathHelper.lerp(delta, getSlowSpeed(), getFastSpeed());
-        System.out.println("DELTA = " + delta + " , SPEED = " + speed);
+        var maxDist = getDistance();
+        var distSquared = Math.min(mob.squaredDistanceTo(targetEntity), maxDist * maxDist);
+        var dist = Math.sqrt(distSquared);
+        var delta = 1 - dist / maxDist;
+        float speed;
+        if (getRatio() == 0) {
+            speed = distSquared == 0
+                ? getFastSpeed()
+                : (float) MathHelper.lerp(delta, getSlowSpeed(), getFastSpeed());
+        }
+        else {
+            speed = delta >= getRatio() ? getFastSpeed() : getSlowSpeed();
+        }
         mob.getNavigation().setSpeed(speed);
     }
 
@@ -94,10 +115,14 @@ public class RunAwayGoal<T extends LivingEntity> extends Goal {
     }
 
     private float getSlowSpeed() {
-        return getStats.get().slowSpeed;
+        return getStats.get().farSpeed;
     }
 
     private float getFastSpeed() {
-        return getStats.get().fastSpeed;
+        return getStats.get().nearSpeed;
+    }
+
+    private float getRatio() {
+        return getStats.get().ratio;
     }
 }
