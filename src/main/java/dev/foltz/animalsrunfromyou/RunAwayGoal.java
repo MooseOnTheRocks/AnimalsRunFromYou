@@ -59,7 +59,6 @@ public class RunAwayGoal<T extends LivingEntity> extends Goal {
         }
         for (net.minecraft.item.ItemStack itemStack : targetEntity.getHandItems()) {
             if (breedingIngredient.test(itemStack)) {
-                System.out.println("Noticed breeding item!");
                 return false;
             }
         }
